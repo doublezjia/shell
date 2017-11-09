@@ -1,0 +1,60 @@
+#!/bin/bash
+# chkconfig: - 85 15
+# description:  shadowsocks
+# processname: shadowsocks
+
+conf='/etc/shadowsocks/config.json'
+processpid='/var/run/shadowsocks.pid'
+processlog='/var/log/shadowsocks.log'
+ssserver='/usr/local/bin/ssserver'
+
+start(){
+	if [ -f $processpid ]; then
+		echo -e  "\033[0;31;40m shadowsocks is already start... \033[0m"
+		exit 1
+	else
+		echo -e '\033[0;32;40m Starting shadowsocks.....  \033[0m'
+		$ssserver -c $conf  -d start >/dev/null 2>&1
+		RETVAL=$?
+		echo -e '\033[0;32;40m Starting shadowsocks OK  \033[0m'
+		return $RETVAL
+	fi
+
+}
+
+
+stop(){
+	echo -e '\033[0;32;40m Stop the shadowsocks.....  \033[0m'
+	$ssserver -d stop >/dev/null 2>&1
+	rm -rf $processlog
+	RETVAL=$?
+	if [ $RETVAL == 0 ]; then
+		echo -e '\033[0;32;40m Stop shadowsocks OK  \033[0m'
+		return $RETVAL
+	else
+		echo -e '\033[0;31;40m Stop shadowsocks faild  \033[0m'
+		exit 1
+	fi
+}
+
+restart(){
+	stop
+	sleep 1
+	start
+}
+
+case "$1" in
+	start)
+			start
+			;;
+	stop)
+			stop
+			;;
+	restart)
+			restart
+			;;
+	*)
+			echo $"Usage: $prog {start|stop|restart}"
+			exit 1
+esac
+exit $RETVAL

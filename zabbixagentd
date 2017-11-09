@@ -1,0 +1,60 @@
+#!/bin/bash
+# chkconfig: - 85 15
+# description: zabbix_agentd
+# processname: zabbix_agentd
+# pidfile: /tmp/zabbix_agentd.pid
+# config: /usr/local/zabbix/etc/zabbix_agentd.conf
+ 
+ 
+zabbix_agentd='/usr/local/zabbix/sbin/zabbix_agentd'
+zabbix_agentd_pid='/tmp/zabbix_agentd.pid'
+RETVAL=0
+  
+#start function
+start(){
+    if [ -f $zabbix_agentd_pid  ];
+    then
+    echo -e  "\033[0;32;40m zabbix agentd already start... \033[0m"
+    exit 1
+    fi
+    echo -e '\033[0;32;40m Starting zabbix agentd.....  \033[0m'
+    $zabbix_agentd
+    RETVAL=$?
+    echo -e '\033[0;32;40m Starting zabbix agentd OK  \033[0m'
+    return $RETVAL
+}
+  
+stop(){
+    echo -e '\033[0;32;40m Stop the zabbix agentd.....  \033[0m'
+    if [ -f $zabbix_agentd_pid ];
+    then
+    parent_pid=`cat $zabbix_agentd_pid`
+    kill $parent_pid && rm -rf $zabbix_agentd_pid
+    RETVAL=$?
+    fi
+    echo -e '\033[0;32;40m Stop zabbix agentd OK  \033[0m'
+    return $RETVAL
+}
+  
+restart(){
+    stop
+    sleep 1
+    start
+}
+  
+# See how we were called.
+case "$1" in
+start)
+        start
+        ;;
+stop)
+        stop
+        ;;
+restart)
+	restart
+        ;;
+*)
+        echo $"Usage: $prog {start|stop|restart}"
+        exit 1
+esac
+exit $RETVAL

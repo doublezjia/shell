@@ -1,0 +1,65 @@
+#!/bin/bash
+# chkconfig: - 85 15
+# description: zabbix_server
+# processname: zabbix_server
+# pidfile: /tmp/zabbix_server.pid
+# config: /usr/local/zabbix/etc/zabbix_server.conf
+ 
+ 
+zabbix_server='/usr/local/zabbix/sbin/zabbix_server'
+zabbix_server_pid='/tmp/zabbix_server.pid'
+RETVAL=0
+  
+#start function
+start(){
+    if [ -f $zabbix_server_pid  ];
+    then
+    echo -e  "\033[0;32;40m zabbix server already start... \033[0m"
+    exit 1
+    fi
+    echo -e '\033[0;32;40m Starting zabbix server.....  \033[0m'
+    $zabbix_server
+    RETVAL=$?
+    echo -e '\033[0;32;40m Starting zabbix server OK  \033[0m'
+    return $RETVAL
+}
+  
+stop(){
+    echo -e '\033[0;32;40m Stop the zabbix server.....  \033[0m'
+    if [ -f $zabbix_server_pid ];
+    then
+    parent_pid=`cat $zabbix_server_pid`
+    subpid=`ps -ef | grep $parent_pid | grep -v grep | awk '{print $2}'`
+    	for i in $subpid
+    	do 
+		kill $i
+    	done
+    kill $parent_pid && rm -rf $zabbix_server_pid
+    RETVAL=$?
+    fi
+    echo -e '\033[0;32;40m Stop zabbix server OK  \033[0m'
+    return $RETVAL
+}
+  
+restart(){
+    stop
+    sleep 1
+    start
+}
+  
+# See how we were called.
+case "$1" in
+start)
+        start
+        ;;
+stop)
+        stop
+        ;;
+restart)
+	restart
+        ;;
+*)
+        echo $"Usage: $prog {start|stop|restart}"
+        exit 1
+esac
+exit $RETVAL
